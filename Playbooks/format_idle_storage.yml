@@ -1,0 +1,54 @@
+#!/usr/bin/env ansible-playbook
+# tasks file for formatting /dev/sda for Cube
+- hosts: workers
+  become: true
+
+  tasks:
+  - name: checks for a partition called storage* and there is a mount for it
+    shell: lsblk -fnl -o NAME,LABEL,MOUNTPOINT,SIZE,TYPE | awk '/ storage_drive \/mnt\/storage/'
+    args:
+      executable: /usr/bin/bash
+    register: lsblkcmd
+    tags: lsblkcmd
+  - debug: msg="{{ lsblkcmd.stdout }}"
+
+# This block retruns:
+# "msg": "sda1      storage_drive /mnt/storage  1.8T part"
+# or
+# "msg": ""
+
+  - name: Format disks that have not been created
+    ansible.builtin.debug:
+      msg: "Disk does NOT need Formatting"
+    when: lsblkcmd.stdout != ""
+
+  - name: Format disks that have not been created
+    ansible.builtin.debug:
+      msg: "Disk needs Formatting"
+    when: lsblkcmd.stdout == ""
+
+  - name: Format those drives
+    shell: |
+      echo -e "\n Partition Drive..."
+      parted -s /dev/sda mklabel gpt
+
+      echo -e "\n Create Max Partition Size"
+      parted -a opt /dev/sda mkpart primary ext4 0% 100%
+
+      echo -e "\n Format Drive..."
+      mkfs.ext4 -L storage_drive /dev/sda1
+
+      echo -e "\n Make empty mount directory & mount"
+      mkdir -p /mnt/storage
+      mount -o defaults /dev/sda1 /mnt/storage
+
+      echo -e "\n modify fstab to automaount the drive"
+      echo "LABEL=storage_drive   /mnt/storage    ext4    defaults          0       2" >> /etc/fstab
+      
+
+    args:
+      executable: /usr/bin/bash
+    when: lsblkcmd.stdout == ""
+    register: fileout
+    tags: fileout
+  - debug: msg="{{ fileout.stdout_lines }}"

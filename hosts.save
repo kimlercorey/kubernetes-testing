@@ -1,0 +1,23 @@
+#control will be for just this local instance
+
+[control]
+raspberrypi  ansible_connection=local
+
+#workers will include all the workers
+
+[workers]
+pi1  ansible_connection=ssh
+pi2  ansible_connection=ssh
+pi3  ansible_connection=ssh
+pi4  ansible_connection=ssh
+pi5  ansible_connection=ssh
+
+#cube will be all systems
+
+[cube:children]
+control
+workers
+
+[workers:vars]
+ansible_ssh_user=admin
+ansible_ssh_private_key_file=/home/admin/.ssh/kub

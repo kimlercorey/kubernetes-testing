@@ -1,0 +1,20 @@
+#!/usr/bin/env ansible-playbook
+# tasks file for formatting /dev/sda for Cube
+- name: Add disk to system
+  hosts: workers
+  become: true
+  tasks:
+    - parted:
+        device: /dev/sda
+        number: 1
+        state: present
+       
+    - filesystem:
+        fstype: ext4
+        dev: /dev/sda1
+       
+    - mount:
+        fstype: ext4
+        src: /dev/sda1
+        path: /mnt/storage
+        state: mounted

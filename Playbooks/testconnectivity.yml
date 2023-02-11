@@ -1,0 +1,9 @@
+# Test Connectivity: File to test connectivity and return message
+- name: Test Connectivity
+  hosts: cube
+  tasks:
+   - name: Ping my hosts
+     ansible.builtin.ping:
+   - name: Print message
+     ansible.builtin.debug:
+       msg: Working!

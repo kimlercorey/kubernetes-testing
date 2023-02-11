@@ -1,0 +1,14 @@
+# Edit file /etc/ansible/hosts
+
+#control will be for just this local instance
+[control]
+raspberrypi  ansible_connection=local
+
+#workers will include all the workers
+[workers]
+pi[1:5]  ansible_connection=ssh
+
+#cube will be all systems
+[cube: children]
+control
+workers

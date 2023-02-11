@@ -1,0 +1,14 @@
+---
+- name: Deploy zsh and make it default shell
+  hosts: all
+  become: true
+
+  tasks:
+  - name: Install zsh
+    package:
+      name: zsh
+      state: present
+
+  - name: Make zsh default shell
+    cqommand: chsh -s $(which zsh) {{ ansible_user }}
+    become: true
